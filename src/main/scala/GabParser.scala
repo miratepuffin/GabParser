@@ -7,11 +7,11 @@ object GabParser extends App{
   sc.setLogLevel("ERROR")
   val rawposts = sc.textFile("/data/gabFull")
   rawposts.map(raw => {
-    try{
+    //try{
       val post = raw
                   .drop(raw.indexOf("\"b'")+3)
                   .dropRight(3)
-                  .replaceAll("\\","")
+                  .replaceAll("\\\\","")
                   .parseJson.convertTo[GabPost]
       val id = post.id.get
       val time = post.created_at.get
@@ -38,10 +38,10 @@ object GabParser extends App{
     //    case None =>
     //  }
       s"$time;$id;$userID;$topicID;$parentID;$parentUserID"
-    }
-    catch {
-      case e:Exception => "failed"
-    }
+    //}
+    //catch {
+    //  case e:Exception => "failed"
+   // }
   }).filter(x => !x.equals("failed")).saveAsTextFile("gabFinal")
 }
 

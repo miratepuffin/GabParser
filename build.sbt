@@ -10,3 +10,5 @@ libraryDependencies += "org.apache.spark" %% "spark-core" % "1.6.0" % "provided"
 // https://mvnrepository.com/artifact/io.spray/spray-json
 libraryDependencies += "io.spray" %% "spray-json" % "1.3.0"
 
+// https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java
+libraryDependencies += "org.xerial.snappy" % "snappy-java" % "1.1.7.3"
