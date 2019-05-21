@@ -3,16 +3,17 @@ import spray.json._
 import GabJsonProtocol.GabPostJsonFormat
 object GabParser extends App{
   val conf = new SparkConf()
+//  conf.set("spark.driver.extraClassPath","/usr/hdp/current/hadoop-client/lib/snappy*.jar")
+//  conf.set("spark.driver.extraLibraryPath","/usr/hdp/current/hadoop-client/lib/native")
   val sc = new SparkContext(conf)
-  sc.setLogLevel("ERROR")
   val rawposts = sc.textFile("/data/gabFull")
-  rawposts.map(raw => {
-    //try{
+  val posts = rawposts.map(raw => {
+    try{
       val post = raw
-                  .drop(raw.indexOf("\"b'")+3)
-                  .dropRight(3)
-                  .replaceAll("\\\\","")
-                  .parseJson.convertTo[GabPost]
+                  .drop(raw.indexOf("\"b'")+3).dropRight(3).replaceAll("\\\\","")
+                  //.drop(x.indexOf("\"b'")+3).dropRight(3).replaceAll("\\\\","")
+        .replaceAll(""""body":(.*)"body_html":""",""""body_html":""").replaceAll(""""embed":(.*)"attachment":""",""""attachment":""").replaceAll(""""attachment":(.*)},"category":""",""""category":""")
+        .parseJson.convertTo[GabPost]
       val id = post.id.get
       val time = post.created_at.get
       var userID = -1
@@ -37,16 +38,13 @@ object GabParser extends App{
      //   }
     //    case None =>
     //  }
-      s"$time;$id;$userID;$topicID;$parentID;$parentUserID"
-    //}
-    //catch {
-    //  case e:Exception => "failed"
-   // }
-  }).filter(x => !x.equals("failed")).saveAsTextFile("gabFinal")
-}
-
-object GabEntityType extends Enumeration {
-  val post : Value = Value("post")
-  val user : Value = Value("user")
-  val topic: Value = Value("topic")
+      //s"$time;$id;$userID;$topicID;$parentID;$parentUserID"
+      "passed"
+    }
+    catch {
+      case e:Exception => raw
+    }
+  })
+  posts.filter(x => !x.equals("passed")).saveAsTextFile("gabFinal")
+  //posts.filter(x => x.equals("failed")).saveAsTextFile("gabFinalFailed")
 }
