@@ -6,14 +6,17 @@ object GabParser extends App{
 //  conf.set("spark.driver.extraClassPath","/usr/hdp/current/hadoop-client/lib/snappy*.jar")
 //  conf.set("spark.driver.extraLibraryPath","/usr/hdp/current/hadoop-client/lib/native")
   val sc = new SparkContext(conf)
-  val rawposts = sc.textFile("/data/gabFull")
+  val rawposts = sc.textFile("/data/gabParsed")
   val posts = rawposts.map(raw => {
     try{
-      val post = raw
-                  .drop(raw.indexOf("\"b'")+3).dropRight(3).replaceAll("\\\\","")
+      val post = raw.parseJson.convertTo[GabPost]
+        //.drop(raw.indexOf("\"b'")+3).dropRight(3)
+        //.replaceAll("(?<![\\[\\:\\{\\,])\\\"(?![\\:\\}\\,])","\\\"")
+
+//        .replaceAll("\\\\","")
                   //.drop(x.indexOf("\"b'")+3).dropRight(3).replaceAll("\\\\","")
-        .replaceAll(""""body":(.*)"body_html":""",""""body_html":""").replaceAll(""""embed":(.*)"attachment":""",""""attachment":""").replaceAll(""""attachment":(.*)},"category":""",""""category":""")
-        .parseJson.convertTo[GabPost]
+//        .replaceAll(""""body":(.*)"body_html":""",""""body_html":""").replaceAll(""""embed":(.*)"attachment":""",""""attachment":""").replaceAll(""""attachment":(.*)},"category":""",""""category":""")
+
       val id = post.id.get
       val time = post.created_at.get
       var userID = -1
